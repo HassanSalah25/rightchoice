@@ -14,12 +14,25 @@ use App\Models\UserPriceing;
 
 
 use DataTables;
+use Spatie\Activitylog\Models\Activity;
+
 class UserController extends AppBaseController
 {
     public function index(Request $request)
     {
         $users = User::query();
-        $users = ModelService::filter_search($users,'name',$request);
+        if($request->sortBy == 0)
+            $users->orderBy('id', 'DESC');
+        else
+            $users->orderBy('id', 'ASC');
+
+        if($request->search_key)
+            $users->where('name','like','%'.$request->search_key.'%');
+        if($request->filter_status != null)
+            $users->where('status',$request->filter_status);
+        if($request->filter_type)
+            $users->where('TYPE',$request->filter_type);
+        $users = $users->paginate($request->  show??10);
         return view('user.index',compact('users'));
     }
     public function create()
@@ -116,7 +129,13 @@ class UserController extends AppBaseController
         return view('user.show', compact('user'));
     }
 
-
+    public function view(User $user)
+    {
+        $aqars_views = $user->views()
+            ->distinct()
+            ->get();
+        return view('user.view', compact('user','aqars_views'));
+    }
 
     public function destroy(User $user)
     {

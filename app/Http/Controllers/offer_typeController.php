@@ -33,7 +33,7 @@ class offer_typeController extends AppBaseController
     public function index(Request $request )
     {
         $offer_types = offer_type::query();
-        $offer_types = ModelService::filter_search($offer_types,'type_offer',$request);
+        $offer_types = ModelService::filter_search($offer_types,'type_offer');
 
         return view('offer_types.index',compact('offer_types'));
     }

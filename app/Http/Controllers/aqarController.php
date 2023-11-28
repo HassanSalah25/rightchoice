@@ -6,8 +6,12 @@ use App\DataTables\aqarDataTable;
 use App\Http\Requests;
 use App\Http\Requests\CreateaqarRequest;
 use App\Http\Requests\UpdateaqarRequest;
+use App\Models\LogActivity;
+use App\Repositories\ActivityLogger;
+use App\Repositories\ActivityLogStatus;
 use App\Repositories\aqarRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Flash;
 use App\Http\Controllers\AppBaseController;
@@ -36,6 +40,7 @@ use App\Models\Notification;
 use App\Http\Requests\CreateNotificationRequest;
 use App\Http\Requests\UpdateNotificationRequest;
 use App\Repositories\NotificationRepository;
+use App\Models\Activity;
 
 class aqarController extends AppBaseController
 {
@@ -53,15 +58,35 @@ class aqarController extends AppBaseController
      * @param aqarDataTable $aqarDataTable
      * @return Response
      */
-    public function index(aqarDataTable $aqarDataTable)
+    public function index(Request $request,aqarDataTable $aqarDataTable)
     {
-        
-                  $allAqars = aqar::with('mzaya')->with('compounds')->with('governrateq')
-            ->with('districte')->with('subAreaa')->with('images')->with('finishType') 
-             ->with('propertyType')->with('offertype')   ->orderBy('status', 'ASC')-> paginate(100);
+
+          $allAqars = aqar::with('mzaya')->with('compounds')->with('governrateq')
+            ->with('districte')->with('subAreaa')->with('images')->with('finishType')
+             ->with('propertyType')->with('offertype');
+        if($request->sortBy == 0)
+            $allAqars->orderBy('id', 'DESC');
+        else
+            $allAqars->orderBy('id', 'ASC');
+
+        if($request->filter_vip != null)
+            $allAqars->where('vip',$request->filter_vip);
+
+        if($request->filter_status  != null)
+            $allAqars->where('status',$request->filter_status);
+
+        if($request->key_word)
+        {
+            $allAqars
+                ->where('title','like','%'.$request->key_word.'%')
+                ->orWhereHas('user',function($q) use ($request){
+                    $q->where('name','like','%'.$request->key_word.'%');
+                });
+        }
+        $allAqars = $allAqars->paginate(100);
 //dd($allAqars);
        // return $aqarDataTable->render('aqars.index');
-       
+
        return view('aqars.table',compact('allAqars'));
     }
 
@@ -73,16 +98,16 @@ class aqarController extends AppBaseController
     public function create()
     {
         $governrate = governrate::pluck('governrate', 'id');
-        $district = district::where('govern_id',1)->pluck('district', 'id','govern_id');
+        $district = district::get();
         $finishtype = finish_type::pluck('finish_type', 'id');
         $floor = floor::pluck('floor', 'id');
         $licensetype = license_type::pluck('license_type', 'id');
         $offertype = offer_type::pluck('type_offer', 'id');
         $subarea = subarea::pluck('area', 'id');
-        $propertytype = property_type::where('cat_id',1)->pluck('property_type', 'id' ,'cat_id');
+        $propertytype = property_type::get();
         $users = User::pluck('name', 'id');
         $aqarcategory = aqar_category::pluck('category_name', 'id');
-        $compound = compound::pluck('compound', 'id');
+        $compound = compound::get();
         $callTimes = call_time::pluck('call_time', 'id');
         return view('aqars.create',compact('governrate','district','finishtype','floor','licensetype','offertype','subarea','propertytype','users','aqarcategory','compound','callTimes'));
     }
@@ -132,7 +157,7 @@ class aqarController extends AppBaseController
         $propertytype = property_type::where('cat_id',1)->pluck('property_type', 'id' ,'cat_id');
         $users = User::pluck('name', 'id');
         $aqarcategory = aqar_category::pluck('category_name', 'id');
-        $compound = compound::pluck('compound', 'id');
+        $compound = compound::get();
         return view('aqars.show',compact('governrate','district','finishtype','floor','licensetype','offertype','subarea','propertytype','users','aqarcategory','compound'))->with('aqar', $aqar);
     }
 
@@ -158,7 +183,7 @@ class aqarController extends AppBaseController
   //  dd($aqar);
         $finishtype = finish_type::pluck('finish_type', 'id');
         $floor = floor::pluck('floor', 'id');
-       
+
         $licensetype = license_type::pluck('license_type', 'id');
         $offertype = offer_type::pluck('type_offer', 'id');
         $subarea = subarea::pluck('area', 'id');
@@ -168,13 +193,15 @@ class aqarController extends AppBaseController
         $getPhoneFirst = User::where('id',$aqar->user_id)->first('MOP');
         $aqarcategory = aqar_category::pluck('category_name', 'id');
         $compound = compound::get();
-        
-        
+
+
         $callTimes = call_time::pluck('call_time', 'id');
         $mzaya = mzaya::select('mzaya_type', 'id')->get();
         $mzayaAqar = aqar_mzaya::where('aqar_id', $id)->get();
          //dd($aqar);
-        return view('aqars.edit',compact('governrate','callTimes','mzaya','mzayaAqar','getPhoneFirst','district','finishtype','floor','licensetype','offertype','subarea','propertytype','users','aqarcategory','compound'))->with('aqar', $aqar);
+        $activity_logs = Activity::forSubject($aqar)->orderBy('id','DESC')->paginate(10);
+
+        return view('aqars.edit',compact('governrate','activity_logs','callTimes','mzaya','mzayaAqar','getPhoneFirst','district','finishtype','floor','licensetype','offertype','subarea','propertytype','users','aqarcategory','compound'))->with('aqar', $aqar);
     }
 
     /**
@@ -187,7 +214,8 @@ class aqarController extends AppBaseController
      */
     public function update($id, UpdateaqarRequest $request)
     {
-         $user = User::where('id' ,$request->user_id)->first();
+
+        $user = User::where('id' ,$request->user_id)->first();
        // dd($user->id);
         $aqar = $this->aqarRepository->find($id);
 
@@ -200,7 +228,7 @@ class aqarController extends AppBaseController
         $aqar = $this->aqarRepository->update($request->all(), $id);
 
         if (is_array($request->images)) {
-          
+
             foreach ($request->images as $fil) {
 
                 Images::create(['aqar_id' => $id,'main_img'=>0, 'img_url' => _uploadFileWebAqar($fil, '')]);
@@ -208,8 +236,8 @@ class aqarController extends AppBaseController
         }
 
         if (is_array($request->input('feature_id'))) {
-            
-              
+
+
             aqar_mzaya::where('aqar_id', $id)->delete();
             foreach ($request->input('feature_id') as $key => $feature) {
                  $request->merge(['mzaya_id' => $request->input('feature_id')[$key]]);
@@ -218,13 +246,13 @@ class aqarController extends AppBaseController
             }
         }
         if($request->status == 1){
-            
-         
+
+
             $message = 'تم قبول الاعلان';
-            
-            
-                                                    
-                                                    
+
+
+
+
          $message.="
             <br/>
               <br/>
@@ -232,20 +260,28 @@ class aqarController extends AppBaseController
                <a href='https://rightchoice-co.com/ar/aqars/$aqar->slug' class='btn btn-outline-primary ml-2'>عرض</a>
                 </div>
                 ";
-        }else{
+        }
+        else{
             $message = 'تم رفض الاعلان بسبب احد الاسباب الاتيه
                          <br/>
-                        1/عدم وجود صور بالإعلان 
+                        1/عدم وجود صور بالإعلان
                          <br/>
-                        2/ عدم استكمال البيانات 
+                        2/ عدم استكمال البيانات
                          <br/>
                         3 / محتوى غير لائق
                          <br/>
-                        4/ وجود اكثر من عرض  في وصف الإعلان  
+                        4/ وجود اكثر من عرض  في وصف الإعلان
                          <br/>
                         5/عرض اكثر من وحده في الإعلان';
         }
-        
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($aqar)
+            ->tap(function(Activity $activity) use ($request) {
+                $activity->comment = $request->comment;
+            })
+            ->log('edited');
+
         $notification = Notification::create([
             'user_id'=>$user->id,
             'type'=> 0,
@@ -254,7 +290,7 @@ class aqarController extends AppBaseController
             ]);
  // dd("fdgf");
         Flash::success('Aqar updated successfully.');
-        
+
         return redirect(route('aqars.index'));
     }
 
@@ -286,7 +322,7 @@ class aqarController extends AppBaseController
     {
         if(file_exists(public_path().'/images/'.$Images->img_url)){
             $image_path = public_path().'/images/'.$Images->img_url;
-                  unlink($image_path);    
+                  unlink($image_path);
         }
         $Images->delete();
 

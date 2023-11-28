@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StatusEnum;
+use App\Enums\VIPEnum;
 use Eloquent as Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -58,7 +60,7 @@ class aqar extends Model
 
 
     public $table = 'aqar';
-    
+
 
 
 
@@ -107,6 +109,7 @@ class aqar extends Model
         'slug_en'
     ];
 
+
     /**
      * The attributes that should be casted to native types.
      *
@@ -114,10 +117,8 @@ class aqar extends Model
      */
     protected $casts = [
         'id' => 'integer',
-        'status' => 'integer',
         'slug' => 'string',
         'title' => 'string',
-        'vip' => 'integer',
         'finannce_bank' => 'integer',
         'licensed' => 'integer',
         'trade' => 'integer',
@@ -160,15 +161,37 @@ class aqar extends Model
      * @var array
      */
     public static $rules = [
-        
+
     ];
+
+
+
+    public function getStatus()
+    {
+        if($this->status == 0)
+            return StatusEnum::WAITACTIVE;
+        else if($this->status == 1)
+            return StatusEnum::ACTIVE;
+        else if($this->status == 2)
+            return StatusEnum::UNACTIVE;
+    }
+
+    public function getVIP()
+    {
+        if($this->vip == 0)
+            return VIPEnum::NOTVIP;
+        else if($this->vip == 1)
+            return VIPEnum::VIP;
+    }
+
+
 
     public function Images()
     {
         return $this->hasMany(Images::class)->orderBy('main_img','desc');
     }
 
-    public function category()
+    public function category_rel()
     {
         return $this->belongsTo(aqar_category::class, 'category');
     }
@@ -182,15 +205,9 @@ class aqar extends Model
     {
         return $this->belongsTo(offer_type::class, 'offer_type');
     }
-    
-    
-    
-    
-    
-    
       public function mzaya()
     {
-        return $this->belongsToMany(mzaya::Class, 'aqar_mzaya', 
+        return $this->belongsToMany(mzaya::Class, 'aqar_mzaya',
           'aqar_id', 'mzaya_id');
     }
 
@@ -198,15 +215,15 @@ class aqar extends Model
     {
         return $this->hasMany(MzayaAqar::Class);
     }
-    
- 
+
+
 
     public function user(){
         return $this->belongsTo(User::class);
     }
 
- 
-  
+
+
     public function location(){
         return $this->belongsTo(Location::class);
     }
@@ -235,7 +252,7 @@ class aqar extends Model
         return $this->belongsTo(subarea::class, 'area_id');
     }
 
-    
+
     public function compounds(){
         return $this->belongsTo(compound::class, 'compound');
     }
@@ -243,12 +260,27 @@ class aqar extends Model
     public function propertyType() {
         return $this->belongsTo(property_type::class, 'property_type');
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+    public function logActivities()
+    {
+        return $this->morphMany(LogActivity::class, 'loggable');
+    }
+
+    public function users_views()
+    {
+        return $this->belongsToMany(User::class,'usercontactaqar','aqars_id','user_id');
+    }
+
+    public function aqar()
+    {
+        return $this->belongsToMany(User::class,'usercontactaqar','aqars_id','user_id');
+    }
+
+
+
+
+
 }

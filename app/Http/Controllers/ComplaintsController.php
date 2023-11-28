@@ -6,12 +6,18 @@ use App\DataTables\ComplaintsDataTable;
 use App\Http\Requests;
 use App\Http\Requests\CreateComplaintsRequest;
 use App\Http\Requests\UpdateComplaintsRequest;
+use App\Models\Company;
+use App\Models\Complaints;
 use App\Repositories\ComplaintsRepository;
 use Flash;
 use App\Http\Controllers\AppBaseController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Response;
 use App\Models\User;
 use App\Models\aqar;
+use App\Models\Activity;
+
 class ComplaintsController extends AppBaseController
 {
     /** @var  ComplaintsRepository */
@@ -40,6 +46,7 @@ class ComplaintsController extends AppBaseController
      */
     public function create()
     {
+
         return view('complaints.create');
     }
 
@@ -64,7 +71,7 @@ class ComplaintsController extends AppBaseController
     /**
      * Display the specified Complaints.
      *
-     * @param  int $id
+     * @param int $id
      *
      * @return Response
      */
@@ -77,15 +84,15 @@ class ComplaintsController extends AppBaseController
 
             return redirect(route('complaints.index'));
         }
-        $GetUsers = User::pluck('name','id');
-        $Getaqar = aqar::pluck('title','id');
-        return view('complaints.show',compact('GetUsers','Getaqar'))->with('complaints', $complaints);
+        $GetUsers = User::pluck('name', 'id');
+        $Getaqar = aqar::pluck('title', 'id');
+        return view('complaints.show', compact('GetUsers', 'Getaqar'))->with('complaints', $complaints);
     }
 
     /**
      * Show the form for editing the specified Complaints.
      *
-     * @param  int $id
+     * @param int $id
      *
      * @return Response
      */
@@ -100,16 +107,18 @@ class ComplaintsController extends AppBaseController
         }
 
         $GetUsers = User::get();
-        $Getaqar = aqar::pluck('title','id');
-        
-     //   dd($complaints);
-        return view('complaints.edit',compact('GetUsers','Getaqar'))->with('complaints', $complaints);
+        $Getaqar = aqar::pluck('title', 'id');
+
+        $activity_logs = Activity::forSubject($complaints)->orderBy('id', 'DESC')->paginate(10);
+
+        //   dd($complaints);
+        return view('complaints.edit', compact('GetUsers', 'activity_logs', 'Getaqar'))->with('complaints', $complaints);
     }
 
     /**
      * Update the specified Complaints in storage.
      *
-     * @param  int              $id
+     * @param int $id
      * @param UpdateComplaintsRequest $request
      *
      * @return Response
@@ -125,6 +134,20 @@ class ComplaintsController extends AppBaseController
         }
 
         $complaints = $this->complaintsRepository->update($request->all(), $id);
+        if ($request->send_email != "on" && $request->status == Complaints::COMPLAINT_SOLVED) {
+            $complaints->update(['sent_email' => 1]);
+            if ($complaints->userinfo->email)
+                Mail::to($complaints->userinfo->email)
+                    ->send(new \App\Mail\MaiableClass($complaints->userinfo->name));
+        }
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($complaints)
+            ->tap(function (Activity $activity) use ($request) {
+                $activity->comment = $request->comment;
+            })
+            ->withProperties($request->except(['_method', '_token']))
+            ->log('edited');
 
         Flash::success('Complaints updated successfully.');
 
@@ -134,7 +157,7 @@ class ComplaintsController extends AppBaseController
     /**
      * Remove the specified Complaints from storage.
      *
-     * @param  int $id
+     * @param int $id
      *
      * @return Response
      */
@@ -154,4 +177,5 @@ class ComplaintsController extends AppBaseController
 
         return redirect(route('complaints.index'));
     }
+
 }

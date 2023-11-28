@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\UserStatusEnum;
+use App\Enums\UserTypeEnum;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -61,9 +63,40 @@ class User extends Authenticatable
             'MOP'            => "required|numeric|phone_number|unique:users,MOP," . $id,
         ];
     }
-    
+
     public function typeRet($type){
-            
+
             return 'hello';
+    }
+
+    public function logActivities()
+    {
+        return $this->hasMany(LogActivity::class,'user_id');
+    }
+
+    public function views()
+    {
+        return $this->belongsToMany(aqar::class,'usercontactaqar','user_id','aqars_id');
+    }
+
+    public function getUserType()
+    {
+        if($this->TYPE == 1)
+            return UserTypeEnum::Buyer;
+        if($this->TYPE == 2)
+            return UserTypeEnum::SALER;
+        if($this->TYPE == 3)
+            return UserTypeEnum::DEVELOPER;
+        if($this->TYPE == 4)
+            return UserTypeEnum::COMPANY;
+
+    }
+
+    public function getStatus()
+    {
+        if($this->status == 1)
+            return UserStatusEnum::ACTIVE;
+        if($this->status == 0)
+            return UserStatusEnum::UNACTIVE;
     }
 }

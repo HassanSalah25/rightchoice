@@ -47,22 +47,22 @@
     <small class="text-danger">{{ $errors->first('created_at') }}</small>
 </div>
 
-<div class="form-group col-sm-4">
-    {!! Form::label('point', '  point:') !!} <span class="text-danger">*</span>
-<input type="text" value="<?php
+    {{--<div class="form-group col-sm-4">--}}
+    {{--    {!! Form::label('point', '  point:') !!} <span class="text-danger">*</span>--}}
+    {{--<input type="text" value="<?php--}}
 
-if( (isset($all_point_of_user)))
+    {{--if( (isset($all_point_of_user)))--}}
 
-{
-if($all_point_of_user->count() > 0){   echo($all_point_of_user->current_points);}
-else{ echo 1; } 
+    {{--{--}}
+    {{--if($all_point_of_user->count() > 0){   echo($all_point_of_user->current_points);}--}}
+    {{--else{ echo 1; } --}}
 
 
-}
-else{ echo 1; } 
-?>" class="form-control" name="current_points">
-    <small class="text-danger">{{ $errors->first('current_points') }}</small>
-</div>
+    {{--}--}}
+    {{--else{ echo 1; } --}}
+    {{--?>" class="form-control" name="current_points">--}}
+    {{--    <small class="text-danger">{{ $errors->first('current_points') }}</small>--}}
+    {{--</div>--}}
 
 
 
@@ -70,7 +70,7 @@ else{ echo 1; }
     {!! Form::label('status SMS', '  status SMS :') !!} <span class="text-danger">*</span>
  {!! Form::text('phone_verfied_sms_status', null, ['class' => 'form-control']) !!}
     <small class="text-danger">{{ $errors->first('phone_verfied_sms_status') }}</small>
-	
+
 </div>
 
 
@@ -78,7 +78,7 @@ else{ echo 1; }
     {!! Form::label('Code Otp', '  COde Otp:') !!} <span class="text-danger">*</span>
  {!! Form::text('phone_sms_otp', null, ['class' => 'form-control']) !!}
     <small class="text-danger">{{ $errors->first('phone_sms_otp') }}</small>
-	
+
 </div>
 
 
@@ -98,12 +98,12 @@ else{ echo 1; }
                      <option value=2 <?php    if($user->TYPE ==2) {echo 'selected' ;}  ?> >   مشتري أو مستأجر    </option>
                      <option value=3 <?php    if($user->TYPE ==3) {echo 'selected' ;}  ?> > مطور عقاري      </option>
                      <option value=4 <?php    if($user->TYPE == 4) {echo 'selected' ;}  ?> > شركه      </option>
-    
-                                
+
+
                             </select>
-                            
-                            
-                            
+
+
+
         <div class="text-danger">{{ $errors->first('type') }}</div>
     </div>
 </div>
@@ -114,17 +114,17 @@ else{ echo 1; }
     <small class="text-danger">{{ $errors->first('AGE') }}</small>
 </div>
 
- 
+
 @if(Route::current()->getName() == 'user.edit')
 <div class="form-group col-sm-4">
     {!! Form::label('status', 'Status:') !!} <span class="text-danger">*</span>
-    {!! Form::select('status', ['Un Active', 'Active'] ,null,['class'=>'form-control']) !!} 
-    <small class="text-danger">{{ $errors->first('status') }}</small>   
+    {!! Form::select('status', ['Un Active', 'Active'] ,null,['class'=>'form-control']) !!}
+    <small class="text-danger">{{ $errors->first('status') }}</small>
 </div>
 @endif
 <!-- Profile Password Field -->
- 
- 
+
+
 
 
                 </div>

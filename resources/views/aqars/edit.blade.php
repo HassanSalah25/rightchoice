@@ -83,7 +83,7 @@
                     $("#selecttested > option").prop("selected", "selected");
                     $("#selecttested").trigger("change");
                 } else {
-                    
+
                     $("#selecttested").val(null).trigger('change');
                 }
         });
@@ -139,7 +139,7 @@
 <script>
         $(window).on("load", function () {
             var cheacktype = $("select[name='property_type']").val();
-       
+
             $("select[name='property_type']").change(function() {
                 if($(this).val() == 1) {
                     $("#number_of_floors").hide(2000);
@@ -148,7 +148,7 @@
                     $("#baths").show(2000);
                     $("#finishtype").show(2000);
                     $("#license_type").hide(2000);
- 
+
                 } else if($(this).val() == 2){
                     $("#number_of_floors").hide(2000);
                     $("#floor").hide(2000);
@@ -201,7 +201,7 @@
                 $("#rooms").hide(2000);
                 $("#baths").hide(2000);
                 $("#license_type").hide(2000);
-                
+
              } else if(cheacktype == 9){
                 $("#license_type").show(2000);
                 $("#floor").hide(2000);
@@ -216,7 +216,7 @@
                 $("#finishtype").show(2000);
                 $("#license_type").hide(2000);
                 $("#number_of_floors").hide(2000);
-                
+
             }
 
         });
@@ -236,7 +236,7 @@
                     $("#trade").show(2000);
                     $("#total_price").show(2000);
                     $("#monthly_rent").hide(2000);
-                  
+
                 } else if($(this).val() == 1) {
                     $("#installment_downpayment").hide(2000);
                     $("#installment_time").hide(2000);
@@ -246,7 +246,7 @@
                     $("#trade").show(2000);
                     $("#total_price").show(2000);
                     $("#monthly_rent").hide(2000);
-                
+
                 } else if(($(this).val() == 3 || $(this).val() == 4)) {
                     $("#monthly_rent").show(2000);
                     $("#installment_downpayment").hide(2000);
@@ -289,8 +289,8 @@
                     $("#trade").show(2000);
                     $("#total_price").show(2000);
                     $("#monthly_rent").hide(2000);
-                
-                
+
+
             } else if((cheackus == 3 || cheackus == 4)) {
                 $("#monthly_rent").show(2000);
                 $("#installment_downpayment").hide(2000);
