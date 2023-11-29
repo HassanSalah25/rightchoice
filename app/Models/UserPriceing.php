@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Eloquent as Model;
 
 
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class UserPriceing
@@ -23,7 +23,7 @@ class UserPriceing extends Model
 
 
     public $table = 'users_priceing_sale';
-    
+
 
 
 
@@ -57,8 +57,10 @@ class UserPriceing extends Model
      * @var array
      */
     public static $rules = [
-        
+
     ];
 
-    
+
+
+
 }

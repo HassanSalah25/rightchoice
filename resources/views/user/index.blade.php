@@ -107,8 +107,11 @@
                             <th>ID</th>
                             <th>اسم</th>
                             <th>نوع</th>
+                            <th>التحقق</th>
                             <th>البريد الإلكتروني</th>
                             <th>التليفون المحمول</th>
+                            <th>الباقة</th>
+                            <th>النقاط</th>
                             <th>حالة</th>
                             <th>التاريخ</th>
                             <th>حدث</th>
@@ -123,8 +126,11 @@
                                 <td>{{$user->name}}</td>
                                 <td>{{$user->getUserType()}}</td>
                                 <td>{{$user->email}}</td>
+                                <td>{{$user->phone_verfied_sms_status ? 'نم' : 'لم يتم'}}</td>
                                 <td>{{$user->MOP}}</td>
                                 <td>{{$user->created_at}}</td>
+                                <td>{{$user->priceing_sale->first()?->type}}</td>
+                                <td>{{$user->user_priceing_sale->first()?->current_points}}</td>
                                 <td>
                                     @php
                                         if($user->status == 1){

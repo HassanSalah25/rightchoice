@@ -131,6 +131,9 @@
                                                     <a href="{!! route('aqars.edit', [$allAqars_val->id]) !!}"
                                                     class='fas fa-edit text-info font-18'><i
                                                             class="glyphicon glyphicon-edit"></i></a>
+                                                <a href="{!! route('aqars.show', [$allAqars_val->id]) !!}"
+                                                   class='fas fa-eye text-primary font-18'><i
+                                                        class="glyphicon glyphicon-eye"></i></a>
                                                     {!! Form::button('<i class="glyphicon glyphicon-trash"></i>', ['type' => 'submit', 'class' => 'fa fa-trash text-danger font-18', 'onclick' => "return confirm('Are you sure?')"]) !!}
                                                 </div>
                                             {!! Form::close() !!}

@@ -158,5 +158,6 @@ Route::get('users/{user}/block', 'App\Http\Controllers\UserController@block');
 Route::get('users/{user}/activate', 'App\Http\Controllers\UserController@activate');
 Route::get('users/{user}/delete', 'App\Http\Controllers\UserController@destroy');
 Route::get('users/{user}', 'App\Http\Controllers\UserController@show');
-Route::get('users/{user}/view', 'App\Http\Controllers\UserController@view');
+Route::get('users/{user}/view', 'App\Http\Controllers\UserController@view')->name('user.view');
+Route::get('users/refund/{user}', 'App\Http\Controllers\UserController@refund')->name('user.refund');
 Route::resource('user', 'App\Http\Controllers\UserController');

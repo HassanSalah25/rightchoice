@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests;
+use App\Models\aqar;
 use App\Services\ModelService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Flash;
 use App\Http\Controllers\AppBaseController;
@@ -122,8 +124,6 @@ class UserController extends AppBaseController
 
 
 
-
-
     public function show(User $user)
     {
         return view('user.show', compact('user'));
@@ -199,6 +199,24 @@ class UserController extends AppBaseController
 
         return redirect(route('user.index'));
 
+    }
+
+    public function refund(Request $request, User $user)
+    {
+        //refund points to user
+        $user->update(['points' => $user->points + $request->points]);
+        $aqar = aqar::find($request->aqar_id);
+        //create log
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($aqar)
+            ->tap(function (\App\Models\Activity $activity) use ($request) {
+                $activity->comment = $request->reason;
+            })
+            ->withProperties($request->except(['_method', '_token']))
+            ->log('refund');
+        Flash::success('تم استرجاع النقاط بنجاح');
+        return redirect(route('user.view', $user->id));
     }
 }
 

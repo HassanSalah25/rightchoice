@@ -79,6 +79,8 @@ class User extends Authenticatable
         return $this->belongsToMany(aqar::class,'usercontactaqar','user_id','aqars_id');
     }
 
+
+
     public function getUserType()
     {
         if($this->TYPE == 1)
@@ -99,4 +101,15 @@ class User extends Authenticatable
         if($this->status == 0)
             return UserStatusEnum::UNACTIVE;
     }
+
+    public function priceing_sale()
+    {
+        return $this->belongsToMany('App\Models\priceing_sale','users_priceing_sale','user_id','pricing_id');
+    }
+
+    public function user_priceing_sale()
+    {
+        return $this->hasMany('App\Models\UserPriceing');
+    }
+
 }

@@ -35,12 +35,23 @@
 
     <!-- <link href="{{ URL::asset('plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css') }}" type="stylesheet" /> -->
 
-
     @yield('headerStyle')
 
     @yield('third_party_stylesheets')
 
     @stack('page_css')
+
+    <style>
+        .layout-fixed .main-sidebar {
+            bottom: 0;
+            float: none;
+            height: 100vh;
+            right: 0 !important;
+            position: fixed;
+            top: 0;
+        }
+
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
